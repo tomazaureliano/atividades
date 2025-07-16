@@ -1,0 +1,163 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
+typedef struct{
+    char nome[20];
+    float vida;
+    float defesa;
+    float ataque;
+}Lutador;
+void inicializar_time(Lutador* jogadores[3][2]){
+  for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 2; j++) {
+          jogadores[i][j] = malloc(sizeof(Lutador));
+          if (jogadores[i][j] == NULL) {
+              printf("Erro de alocação de memória!\n");
+              exit(1);
+          }
+      }
+  }
+  for(int i = 0; i < 3; i++){
+    printf("digite o nome do lutador %d do time %d: ", i+1, 1);
+    fgets(jogadores[i][0]->nome, 20, stdin);
+    jogadores[i][0]->nome[strcspn(jogadores[i][0]->nome, "\n")] = '\0';
+    jogadores[i][0]->vida = 100;
+    jogadores[i][0]->defesa = (rand() % 10) + 1;
+    jogadores[i][0]->ataque = (rand() % 10) + 1;
+  }
+      for(int i = 0; i < 3; i++){
+        printf("digite o nome do lutador %d do time %d: ", i+1, 1);
+        fgets(jogadores[i][1]->nome, 20, stdin);
+        jogadores[i][1]->nome[strcspn(jogadores[i][1]->nome, "\n")] = '\0';
+        jogadores[i][1]->vida = 100;
+        jogadores[i][1]->defesa = (rand() % 10) + 1;
+        jogadores[i][1]->ataque = (rand() % 10) + 1;
+      }
+}
+int definir_time_que_comeca(){
+  int time = rand() % 2;
+  return time;
+}
+float calcular_precisao_ataque(Lutador* atacante){
+  float precisao = 1 - (atacante->vida * atacante->ataque)/1000;
+  return precisao;
+}
+void atualizar_vida(Lutador* atacante, Lutador* defensor){
+  float divisao = defensor->defesa/10;
+  if(divisao == 0){
+    divisao = 1;
+  }
+  float dano = (atacante->ataque)/ divisao;
+  if (dano < 0) dano = 0;
+  defensor->vida -= dano;
+  if(defensor->vida <= 0){
+    defensor->vida = 0;
+    printf("%s morreu\n\n", defensor->nome);
+  }
+}
+void atacar(Lutador* atacante, Lutador* defensor){
+  if(atacante->vida <= 0){
+    printf("%s está morto e não pode atacar\n", atacante->nome);
+    return;
+  }
+  if(defensor->vida <= 0){
+    printf("%s já está morto, ataque desperdiçado\n\n", defensor->nome);
+    return;
+  }
+  if(calcular_precisao_ataque(atacante) > (float)rand()/RAND_MAX){
+    printf("%s ataca %s\n", atacante->nome, defensor->nome);
+    atualizar_vida(atacante, defensor);
+  }
+  else{
+    printf("%s erra o ataque\n", atacante->nome);
+  }
+}
+int time_esta_vivo(Lutador* time[3]) {
+    for (int i = 0; i < 3; i++) {
+        if (time[i]->vida > 0)
+            return 1;
+    }
+    return 0;
+}
+void mostrar_status(Lutador* time[3][2], int num_time){
+    printf("\nStatus do Time %d:\n\n", num_time);
+    for(int i = 0; i < 3; i++){
+     
+        printf("%s - Vida: %.2f\n\n", time[i][num_time-1]->nome, time[i][num_time-1]->vida);
+    }
+}
+void jogar(Lutador* jogadores[3][2]){
+   srand(time(NULL));
+    inicializar_time(jogadores);
+
+    printf("Time 1:\n");
+    for(int i = 0; i < 3; i++){
+      printf("Nome: %s\n", jogadores[i][0]->nome);
+      printf("vida: %.2f\n", jogadores[i][0]->vida);
+      printf("ataque: %.2f\n", jogadores[i][0]->ataque);
+      printf("defesa: %.2f\n", jogadores[i][0]->defesa);
+    }
+    printf("Time 2:\n");
+    for(int i = 0; i < 3; i++){
+      printf("Nome: %s\n", jogadores[i][1]->nome);
+      printf("vida: %.2f\n", jogadores[i][1]->vida);
+      printf("ataque: %.2f\n", jogadores[i][1]->ataque);
+      printf("defesa: %.2f\n", jogadores[i][1]->defesa);
+    }
+    if(definir_time_que_comeca() == 1){
+      printf("Time 1 começa\n");
+      do{
+      for(int i = 0; i < 3; i++){
+        for(int j = 0; j < 2; j++){
+          int outro_time = (j == 0) ? 1 : 0;
+        atacar(jogadores[i][j],  jogadores[rand()%3][outro_time]);
+
+      }
+      }
+        mostrar_status(jogadores, 1);
+        mostrar_status(jogadores, 2);
+        }while(time_esta_vivo(jogadores[0]) && time_esta_vivo(jogadores[1]));
+          if(jogadores[0][1]->vida <= 0 && jogadores[1][1]->vida <= 0 && jogadores[2][1]->vida <= 0)
+        {
+          printf("time 1 venceu");
+          return ;
+        }
+        else if(jogadores[0][0]->vida <= 0 && jogadores[1][0]->vida <= 0 && jogadores[2][0]->vida <= 0){
+          printf("time 2 venceu");
+        }
+        return ;
+    }
+    else{
+      printf("Time 2 começa\n");
+    do{
+      for(int i = 0; i < 3; i++){
+        for(int j = 0; j < 2; j++){
+            int outro_time = (j == 0) ? 1 : 0;
+          atacar(jogadores[i][j],  jogadores[rand()%3][outro_time]);
+
+        }
+        }
+      mostrar_status(jogadores, 1);
+      mostrar_status(jogadores, 2);
+        }while(time_esta_vivo(jogadores[0]) && time_esta_vivo(jogadores[1]));
+        {
+          if(jogadores[0][0]->vida <= 0 && jogadores[1][0]->vida <= 0 && jogadores[2][0]->vida <= 0){
+          printf("time 2 venceu");
+          return ;
+        }
+       else if(jogadores[0][1]->vida <= 0 && jogadores[1][1]->vida <= 0 && jogadores[2][1]->vida <= 0){
+          printf("time 1 venceu");
+         return ;
+       }
+
+    }
+
+  }
+}
+int main(void){
+  srand(time(NULL));
+  Lutador* jogadores[3][2];
+ jogar(jogadores);
+}
